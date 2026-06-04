@@ -1,7 +1,6 @@
 export async function POST(req) {
   try {
     const { images, count } = await req.json()
-    const mode = 'male'
 
     if (!images || images.length < 2) {
       return Response.json({ error: '사진을 2장 이상 올려줘' }, { status: 400 })
