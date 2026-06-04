@@ -71,7 +71,7 @@ export default function Home() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images, count: photos.length, mode }),
+        body: JSON.stringify({ images, count: photos.length }),
       })
       
       const data = await res.json()
