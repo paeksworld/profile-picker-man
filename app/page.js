@@ -60,37 +60,23 @@ export default function Home() {
     setResults(null)
 
     try {
-      const shuffled = [...photos].map((p, i) => ({ ...p, origIndex: i }))
-        .sort(() => Math.random() - 0.5)
-
-      const images = await Promise.all(shuffled.map(async (p) => {
+      const images = await Promise.all(photos.map(async (p) => {
         const compressed = await compressImage(p.dataUrl, 800)
         return {
           mediaType: 'image/jpeg',
           data: compressed.split(',')[1],
         }
       }))
-
+      
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images, count: photos.length, order: shuffled.map(p => p.origIndex) }),
+        body: JSON.stringify({ images, count: photos.length, mode }),
       })
-
+      
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-
-      // 섞인 순서 → 원래 순서로 되돌리기
-      const order = shuffled.map(p => p.origIndex)
-      const remapped = {
-        ...data,
-        photos: data.photos.map(p => ({
-          ...p,
-          num: order[p.num - 1] + 1
-        })),
-        bestNum: order[data.bestNum - 1] + 1
-      }
-      setResults(remapped)
+      setResults(data)
     } catch (err) {
       setError('분석 중 오류가 났어. 다시 시도해봐! (' + err.message + ')')
     } finally {
