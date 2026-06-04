@@ -79,7 +79,18 @@ export default function Home() {
 
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setResults(data)
+
+      // 섞인 순서 → 원래 순서로 되돌리기
+      const order = shuffled.map(p => p.origIndex)
+      const remapped = {
+        ...data,
+        photos: data.photos.map(p => ({
+          ...p,
+          num: order[p.num - 1] + 1
+        })),
+        bestNum: order[data.bestNum - 1] + 1
+      }
+      setResults(remapped)
     } catch (err) {
       setError('분석 중 오류가 났어. 다시 시도해봐! (' + err.message + ')')
     } finally {
