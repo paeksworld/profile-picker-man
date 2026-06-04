@@ -37,7 +37,15 @@ export async function POST(req) {
   "bestReason": "이 사진이 베스트인 이유 한 문장"
 }
 
-사진 번호는 1부터 ${count}까지. isBest는 베스트 사진만 true. score는 소개팅 프로필로서 1-10점.`
+사진 번호는 1부터 ${count}까지. isBest는 베스트 사진만 true.
+
+score는 아래 기준으로 채점해 (합산 10점):
+- 표정/눈빛 자연스러움: 0-3점
+- 전체적인 인상/분위기: 0-3점
+- 배경/구도/조명: 0-2점
+- 옷차림/스타일: 0-2점
+
+각 사진을 위 기준으로 독립적으로 채점해. 매번 동일한 기준으로 일관되게 평가할 것.
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
