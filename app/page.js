@@ -60,7 +60,10 @@ export default function Home() {
     setResults(null)
 
     try {
-      const images = await Promise.all(photos.map(async (p) => {
+      const shuffled = [...photos].map((p, i) => ({ ...p, origIndex: i }))
+        .sort(() => Math.random() - 0.5)
+
+      const images = await Promise.all(shuffled.map(async (p) => {
         const compressed = await compressImage(p.dataUrl, 800)
         return {
           mediaType: 'image/jpeg',
@@ -71,7 +74,7 @@ export default function Home() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images, count: photos.length }),
+        body: JSON.stringify({ images, count: photos.length, order: shuffled.map(p => p.origIndex) }),
       })
 
       const data = await res.json()
