@@ -49,7 +49,7 @@ export async function POST(req) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
-        temperature: 0.3,
+        temperature: 0.2,
         messages: [
           {
             role: 'user',
