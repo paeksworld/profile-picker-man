@@ -60,23 +60,36 @@ export default function Home() {
     setResults(null)
 
     try {
-      const images = await Promise.all(photos.map(async (p) => {
+      const shuffled = [...photos].map((p, i) => ({ ...p, origIndex: i }))
+        .sort(() => Math.random() - 0.5)
+
+      const images = await Promise.all(shuffled.map(async (p) => {
         const compressed = await compressImage(p.dataUrl, 800)
         return {
           mediaType: 'image/jpeg',
           data: compressed.split(',')[1],
         }
       }))
-      
+
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ images, count: photos.length }),
       })
-      
+
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setResults(data)
+
+      const order = shuffled.map(p => p.origIndex)
+      const remapped = {
+        ...data,
+        photos: data.photos.map(p => ({
+          ...p,
+          num: order[p.num - 1] + 1
+        })),
+        bestNum: order[data.bestNum - 1] + 1
+      }
+      setResults(remapped)
     } catch (err) {
       setError('분석 중 오류가 났어. 다시 시도해봐! (' + err.message + ')')
     } finally {
@@ -103,14 +116,7 @@ export default function Home() {
         <span>JPG, PNG, WEBP · 최대 5장</span>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: 'none' }}
-        onChange={(e) => addPhotos(e.target.files)}
-      />
+      <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => addPhotos(e.target.files)} />
 
       {photos.length > 0 && (
         <div className="photos-grid">
@@ -118,7 +124,7 @@ export default function Home() {
             <div key={p.id} className="photo-item">
               <img src={p.dataUrl} alt={`사진 ${i + 1}`} />
               <span className="photo-num">{i + 1}</span>
-              <button className="photo-remove" onClick={() => removePhoto(p.id)} aria-label="삭제">✕</button>
+              <button className="photo-remove" onClick={() => removePhoto(p.id)}>✕</button>
             </div>
           ))}
         </div>
@@ -175,7 +181,6 @@ export default function Home() {
           })}
         </div>
       )}
-
       <p className="footer">powered by Claude AI</p>
     </div>
   )
